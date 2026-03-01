@@ -3,233 +3,1016 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tic Tac Toe</title>
+<title>AI Chip Startups Comparison 2026</title>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: #0f0f1a;
-    color: #e0e0e0;
-    user-select: none;
+  :root {
+    --bg: #0b0d17;
+    --surface: #141625;
+    --surface2: #1c1f35;
+    --border: #2a2d48;
+    --text: #e2e4f0;
+    --text-dim: #8b8fa8;
+    --accent: #6c5ce7;
+    --accent2: #00cec9;
+    --green: #00b894;
+    --orange: #fdcb6e;
+    --red: #ff6b6b;
+    --pink: #fd79a8;
+    --blue: #74b9ff;
   }
-  h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #6ee7b7, #3b82f6);
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  .hero {
+    text-align: center;
+    padding: 3rem 1.5rem 2rem;
+    background: linear-gradient(180deg, #151833 0%, var(--bg) 100%);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 {
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent2), var(--accent), var(--pink));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
   }
-  #status {
-    font-size: 1.1rem;
-    margin-bottom: 1.2rem;
-    height: 1.5em;
-    color: #94a3b8;
+  .hero p {
+    color: var(--text-dim);
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    max-width: 650px;
+    margin: 0 auto 1.5rem;
   }
-  #board {
-    display: grid;
-    grid-template-columns: repeat(3, 100px);
-    grid-template-rows: repeat(3, 100px);
-    gap: 6px;
+  .hero .updated {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    opacity: 0.7;
   }
-  .cell {
-    width: 100px;
-    height: 100px;
-    background: #1e1e2e;
-    border: 2px solid #2a2a3d;
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 12px;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    flex: 1;
+    min-width: 140px;
+  }
+  .stat .num {
+    font-size: 1.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .stat .label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Filter nav */
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(11,13,23,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-btn {
+    padding: 0.45rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* Search */
+  .search-wrap {
+    padding: 1rem 1.5rem 0;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .search-wrap input {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-wrap input::placeholder { color: var(--text-dim); }
+
+  /* Main grid */
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 1.2rem;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+    box-shadow: 0 8px 32px rgba(108,92,231,0.15);
+  }
+  .card.hidden { display: none; }
+
+  .card-header {
+    padding: 1.2rem 1.2rem 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .card-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .card-header .hq {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+
+  .status-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .status-shipping { background: rgba(0,184,148,0.15); color: var(--green); }
+  .status-development { background: rgba(253,203,110,0.15); color: var(--orange); }
+  .status-acquired { background: rgba(116,185,255,0.15); color: var(--blue); }
+  .status-struggling { background: rgba(255,107,107,0.15); color: var(--red); }
+  .status-ipo { background: rgba(253,121,168,0.15); color: var(--pink); }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0 1.2rem 0.8rem;
+  }
+  .tag {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  .card-body {
+    padding: 0 1.2rem 1rem;
+  }
+  .card-body p {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 0.8rem;
+    line-height: 1.5;
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+  .metric {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 0.6rem 0.7rem;
+  }
+  .metric .val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .metric .key {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .perf-claim {
+    font-size: 0.78rem;
+    color: var(--accent2);
+    background: rgba(0,206,201,0.08);
+    border: 1px solid rgba(0,206,201,0.2);
+    border-radius: 8px;
+    padding: 0.5rem 0.7rem;
+    margin-bottom: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .card-footer {
+    border-top: 1px solid var(--border);
+    padding: 0.7rem 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+  }
+  .card-footer .founded { color: var(--text-dim); }
+  .card-footer a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .card-footer a:hover { text-decoration: underline; }
+
+  /* Comparison table section */
+  .table-section {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 1.5rem 3rem;
+  }
+  .table-section h2 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #fff;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+    font-size: 0.8rem;
+  }
+  th {
+    background: var(--surface2);
+    padding: 0.7rem 0.8rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.04em;
+    position: sticky;
+    top: 0;
+    white-space: nowrap;
+    cursor: pointer;
+    user-select: none;
+  }
+  th:hover { color: var(--accent2); }
+  th.sorted-asc::after { content: " ▲"; font-size: 0.6rem; }
+  th.sorted-desc::after { content: " ▼"; font-size: 0.6rem; }
+  td {
+    padding: 0.6rem 0.8rem;
+    border-top: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(108,92,231,0.05); }
+  .company-cell {
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .legend-item {
     display: flex;
     align-items: center;
-    justify-content: center;
-    font-size: 2.6rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s, border-color 0.15s;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
   }
-  .cell:hover:not(.taken) {
-    background: #282840;
-    border-color: #3b82f6;
-    transform: scale(1.04);
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
   }
-  .cell.taken { cursor: default; }
-  .cell.x { color: #6ee7b7; }
-  .cell.o { color: #f472b6; }
-  .cell.win {
-    border-color: #facc15;
-    background: #2a2a1a;
-    animation: pop 0.35s ease;
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.75rem;
   }
-  @keyframes pop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.12); }
-    100% { transform: scale(1); }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  /* Mobile */
+  @media (max-width: 768px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .stats-bar {
+      gap: 0.5rem;
+    }
+    .stat {
+      min-width: 100px;
+      padding: 0.7rem 0.8rem;
+    }
+    .stat .num { font-size: 1.2rem; }
+    .metrics {
+      grid-template-columns: 1fr 1fr;
+    }
+    .filter-bar {
+      gap: 0.3rem;
+      padding: 0.8rem 1rem;
+    }
+    .filter-btn {
+      font-size: 0.7rem;
+      padding: 0.35rem 0.7rem;
+    }
+    .hero { padding: 2rem 1rem 1.5rem; }
+    .container { padding: 1rem; }
+    .table-section { padding: 0 1rem 2rem; }
   }
-  #restart {
-    margin-top: 1.4rem;
-    padding: 0.6rem 2rem;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #6ee7b7, #3b82f6);
-    color: #0f0f1a;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
+
+  @media (max-width: 400px) {
+    .grid {
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+    }
+    .card-header h2 { font-size: 1.05rem; }
   }
-  #restart:hover { opacity: 0.85; }
-  #score {
-    margin-top: 1rem;
-    font-size: 0.95rem;
-    color: #64748b;
-  }
-  #score span { font-weight: 700; }
-  .score-x { color: #6ee7b7 !important; }
-  .score-o { color: #f472b6 !important; }
 </style>
 </head>
 <body>
-<h1>Tic Tac Toe</h1>
-<div id="status">Your turn (X)</div>
-<div id="board"></div>
-<button id="restart">New Game</button>
-<div id="score">
-  <span class="score-x">X: <span id="sx">0</span></span> &nbsp;|&nbsp;
-  Draws: <span id="sd">0</span> &nbsp;|&nbsp;
-  <span class="score-o">O: <span id="so">0</span></span>
+
+<section class="hero">
+  <h1>AI Chip Startups</h1>
+  <p>A comprehensive comparison of startups building custom silicon to challenge Nvidia's dominance in AI training and inference.</p>
+  <span class="updated">Last updated: March 2026</span>
+</section>
+
+<div class="stats-bar">
+  <div class="stat"><div class="num">18</div><div class="label">Companies</div></div>
+  <div class="stat"><div class="num">$50B+</div><div class="label">Total Funding</div></div>
+  <div class="stat"><div class="num">10</div><div class="label">Countries</div></div>
+  <div class="stat"><div class="num">$296B</div><div class="label">Market Size 2030</div></div>
 </div>
 
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div> Shipping</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div> Development</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Acquired</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--pink)"></div> Pre-IPO</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div> Struggling</div>
+</div>
+
+<nav class="filter-bar">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="inference">Inference</button>
+  <button class="filter-btn" data-filter="training">Training</button>
+  <button class="filter-btn" data-filter="edge">Edge</button>
+  <button class="filter-btn" data-filter="datacenter">Data Center</button>
+  <button class="filter-btn" data-filter="photonic">Photonic</button>
+  <button class="filter-btn" data-filter="asic">ASIC</button>
+</nav>
+
+<div class="search-wrap">
+  <input type="text" id="search" placeholder="Search companies, technologies, locations...">
+</div>
+
+<div class="container">
+  <div class="grid" id="cardGrid">
+
+    <!-- Cerebras -->
+    <div class="card" data-tags="datacenter training inference asic wafer-scale" data-name="cerebras">
+      <div class="card-header">
+        <div><h2>Cerebras Systems</h2><div class="hq">Sunnyvale, CA, USA</div></div>
+        <span class="status-badge status-ipo">Pre-IPO</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">Wafer-Scale</span><span class="tag">Training</span><span class="tag">Inference</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Builds the world's largest chip (WSE-3) from an entire silicon wafer &mdash; 4 trillion transistors, 900K cores, and 44 GB on-chip SRAM. Signed a $10B+ deal with OpenAI.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">$23B</div><div class="key">Valuation</div></div>
+          <div class="metric"><div class="val">$4.7B+</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2016</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">WSE-3</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">4T transistors &bull; 20x faster inference vs GPU clusters &bull; 19x more transistors than Nvidia B200</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Q2 2026 IPO targeted</span>
+        <a href="https://cerebras.net" target="_blank">cerebras.net</a>
+      </div>
+    </div>
+
+    <!-- Groq -->
+    <div class="card" data-tags="datacenter inference asic lpu" data-name="groq">
+      <div class="card-header">
+        <div><h2>Groq</h2><div class="hq">Mountain View, CA, USA</div></div>
+        <span class="status-badge status-acquired">Nvidia Deal</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">LPU</span><span class="tag">Inference</span><span class="tag">Data Center</span><span class="tag">ASIC</span>
+      </div>
+      <div class="card-body">
+        <p>Developed the Language Processing Unit (LPU) for ultra-fast, deterministic AI inference. Achieved 360K+ developers in 18 months. Nvidia acquired key assets for $20B in Dec 2025.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">$20B</div><div class="key">Nvidia Deal</div></div>
+          <div class="metric"><div class="val">$3.2B+</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2016</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">LPU v1</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">360K+ developers &bull; 75% Fortune 100 on platform &bull; ~$500M projected 2025 revenue</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Nvidia hybrid GPU-LPU for 2026</span>
+        <a href="https://groq.com" target="_blank">groq.com</a>
+      </div>
+    </div>
+
+    <!-- Taalas -->
+    <div class="card" data-tags="datacenter inference asic hardwired" data-name="taalas">
+      <div class="card-header">
+        <div><h2>Taalas</h2><div class="hq">Toronto, Canada</div></div>
+        <span class="status-badge status-shipping">Shipping</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">Hardwired Models</span><span class="tag">Inference</span><span class="tag">ASIC</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Etches AI model weights directly into transistors, creating model-specific processors. HC1 chip hardwires Llama 3.1 8B. Founded by ex-AMD/Nvidia/Tenstorrent engineers.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">$219M</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">TSMC 6nm</div><div class="key">Process</div></div>
+          <div class="metric"><div class="val">2023</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">HC1</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">17,000 tokens/sec &bull; 73x faster than H200 &bull; 1/10th the power &bull; Model to chip in ~2 months</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">HC2 (20B params) coming 2026</span>
+        <a href="https://taalas.com" target="_blank">taalas.com</a>
+      </div>
+    </div>
+
+    <!-- Etched -->
+    <div class="card" data-tags="datacenter inference asic transformer" data-name="etched">
+      <div class="card-header">
+        <div><h2>Etched</h2><div class="hq">San Francisco, CA, USA</div></div>
+        <span class="status-badge status-development">Development</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">Transformer ASIC</span><span class="tag">Inference</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Building Sohu, the first chip purpose-built for transformer architecture. Hard-wires matrix multiplication patterns for transformers only. Founded by three Harvard dropouts.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">$5B</div><div class="key">Valuation</div></div>
+          <div class="metric"><div class="val">~$1B</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2022</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">Sohu</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">500K+ tokens/sec on Llama-70B (8-chip) &bull; TSMC 4nm &bull; 10-20x perf/watt vs H100</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Backed by Peter Thiel &amp; Stripes</span>
+        <a href="https://etched.com" target="_blank">etched.com</a>
+      </div>
+    </div>
+
+    <!-- MatX -->
+    <div class="card" data-tags="datacenter training inference asic llm" data-name="matx">
+      <div class="card-header">
+        <div><h2>MatX</h2><div class="hq">USA</div></div>
+        <span class="status-badge status-development">Development</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">LLM-Specific</span><span class="tag">Training + Inference</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Founded by Google TPU leads (CEO led TPU software, CTO designed TPU hardware). Building a chip 10x better at training LLMs than Nvidia GPUs. Splittable systolic array architecture.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">Multi-$B</div><div class="key">Valuation</div></div>
+          <div class="metric"><div class="val">$600M+</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2022</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">MatX One</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">Claims 10x better LLM training than Nvidia &bull; Outperforms Rubin Ultra per mm&sup2; &bull; Ships 2027</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Led by Jane Street &amp; Aschenbrenner</span>
+        <a href="https://matx.com" target="_blank">matx.com</a>
+      </div>
+    </div>
+
+    <!-- SambaNova -->
+    <div class="card" data-tags="datacenter training inference rdu" data-name="sambanova">
+      <div class="card-header">
+        <div><h2>SambaNova Systems</h2><div class="hq">Palo Alto, CA, USA</div></div>
+        <span class="status-badge status-shipping">Shipping</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">RDU</span><span class="tag">Dataflow</span><span class="tag">Training + Inference</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Builds reconfigurable dataflow units (RDUs) as the "GPU alternative." SN50 chip claims 5x faster speed and 3x lower TCO vs GPUs. SoftBank deploying in Japan data centers.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">~$1.6B</div><div class="key">Reported Value</div></div>
+          <div class="metric"><div class="val">$1.5B+</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2017</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">SN50</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">SN50: 5x faster for agentic AI &bull; 3x lower TCO vs GPUs &bull; Intel acquisition rumored at $1.6B</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Intel acquisition reportedly in talks</span>
+        <a href="https://sambanova.ai" target="_blank">sambanova.ai</a>
+      </div>
+    </div>
+
+    <!-- Tenstorrent -->
+    <div class="card" data-tags="datacenter inference training riscv edge" data-name="tenstorrent">
+      <div class="card-header">
+        <div><h2>Tenstorrent</h2><div class="hq">Toronto, Canada</div></div>
+        <span class="status-badge status-shipping">Shipping</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">RISC-V</span><span class="tag">Tensix Cores</span><span class="tag">Open Source</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Led by Jim Keller (AMD Zen, Tesla FSD). Combines Tensix AI cores with open-source RISC-V stack. Also licenses IP for custom silicon. Blackhole processor at $1,399.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">$2.6B</div><div class="key">Valuation</div></div>
+          <div class="metric"><div class="val">$700M+</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2016</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">Blackhole</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">664 TFLOPS (BLOCKFP8) &bull; 32GB GDDR6 &bull; $1,399 price &bull; Fully open-source software stack</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Backed by Samsung, LG, Bezos</span>
+        <a href="https://tenstorrent.com" target="_blank">tenstorrent.com</a>
+      </div>
+    </div>
+
+    <!-- d-Matrix -->
+    <div class="card" data-tags="datacenter inference in-memory" data-name="d-matrix">
+      <div class="card-header">
+        <div><h2>d-Matrix</h2><div class="hq">Santa Clara, CA, USA</div></div>
+        <span class="status-badge status-shipping">Shipping</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">In-Memory Compute</span><span class="tag">Inference</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Digital in-memory compute architecture using SRAM for matrix operations. Corsair chip has 1GB on-chip SRAM. Full stack: Corsair accelerators, JetStream NICs, Aviator software.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">$2B</div><div class="key">Valuation</div></div>
+          <div class="metric"><div class="val">$450M</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2019</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">Corsair</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">10x faster inference &bull; 3x lower cost &bull; 3-5x better energy efficiency vs GPUs</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Raptor (3D stacked) next gen</span>
+        <a href="https://d-matrix.ai" target="_blank">d-matrix.ai</a>
+      </div>
+    </div>
+
+    <!-- Lightmatter -->
+    <div class="card" data-tags="datacenter photonic interconnect inference" data-name="lightmatter">
+      <div class="card-header">
+        <div><h2>Lightmatter</h2><div class="hq">Boston, MA, USA</div></div>
+        <span class="status-badge status-shipping">Shipping</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">Photonic</span><span class="tag">Interconnect</span><span class="tag">Inference</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Uses light (photonics) for AI computation and chip interconnects. MIT alumni founders. Passage M1000 delivers 114 Tbps optical bandwidth. First photonic processor to run BERT and ResNet.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">$4.4B</div><div class="key">Valuation</div></div>
+          <div class="metric"><div class="val">$850M</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2017</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">Passage M1000</div><div class="key">Key Product</div></div>
+        </div>
+        <div class="perf-claim">114 Tbps optical bandwidth &bull; First photonic chip to run BERT &bull; L200 (64 Tbps) in 2026</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Led by T. Rowe Price</span>
+        <a href="https://lightmatter.co" target="_blank">lightmatter.co</a>
+      </div>
+    </div>
+
+    <!-- Graphcore -->
+    <div class="card" data-tags="datacenter training inference ipu" data-name="graphcore">
+      <div class="card-header">
+        <div><h2>Graphcore</h2><div class="hq">Bristol, UK</div></div>
+        <span class="status-badge status-acquired">SoftBank</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">IPU</span><span class="tag">Training + Inference</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Pioneered the Intelligence Processing Unit (IPU) with massive parallelism. Acquired by SoftBank, now operates under its umbrella. Large on-chip memory (>100GB per chip).</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">Acquired</div><div class="key">Status</div></div>
+          <div class="metric"><div class="val">$730M+</div><div class="key">Pre-Acq. Raised</div></div>
+          <div class="metric"><div class="val">2016</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">IPU</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">Massive on-chip SRAM &bull; Fine-grained parallelism &bull; Now under SoftBank umbrella</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Acquired by SoftBank</span>
+        <a href="https://graphcore.ai" target="_blank">graphcore.ai</a>
+      </div>
+    </div>
+
+    <!-- FuriosaAI -->
+    <div class="card" data-tags="datacenter inference edge" data-name="furiosaai">
+      <div class="card-header">
+        <div><h2>FuriosaAI</h2><div class="hq">Seoul, South Korea</div></div>
+        <span class="status-badge status-shipping">Shipping</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">NPU</span><span class="tag">Inference</span><span class="tag">Data Center</span><span class="tag">LLM</span>
+      </div>
+      <div class="card-body">
+        <p>Korean AI chip unicorn building inference NPUs. Rejected Meta's $800M acquisition offer. RNGD chip optimized for LLMs. Partnered with LG AI Research for EXAONE platform.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">Unicorn</div><div class="key">Status</div></div>
+          <div class="metric"><div class="val">$250M+</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2017</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">RNGD</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">Rejected Meta's $800M offer &bull; 20K NPUs shipping in 2026 &bull; 2027 IPO targeted</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Ex-Samsung & AMD founder</span>
+        <a href="https://furiosa.ai" target="_blank">furiosa.ai</a>
+      </div>
+    </div>
+
+    <!-- Rebellions -->
+    <div class="card" data-tags="datacenter inference training" data-name="rebellions">
+      <div class="card-header">
+        <div><h2>Rebellions</h2><div class="hq">Seoul, South Korea</div></div>
+        <span class="status-badge status-shipping">Shipping</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">AI Accelerator</span><span class="tag">Inference</span><span class="tag">Samsung 4nm</span><span class="tag">HBM3E</span>
+      </div>
+      <div class="card-body">
+        <p>Korean AI chip unicorn formed from Rebellions + Sapeon Korea merger. Rebel-Quad processor on Samsung 4nm with HBM3E. Backed by Arm, Samsung. Expanding to Gulf &amp; North America.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">$1.4B</div><div class="key">Valuation</div></div>
+          <div class="metric"><div class="val">$500M+</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2020</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">Rebel-Quad</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">Samsung 4nm process &bull; HBM3E memory &bull; Arm's first Korean startup investment</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Merged with Sapeon Korea</span>
+        <a href="https://rebellions.ai" target="_blank">rebellions.ai</a>
+      </div>
+    </div>
+
+    <!-- Hailo -->
+    <div class="card" data-tags="edge inference automotive" data-name="hailo">
+      <div class="card-header">
+        <div><h2>Hailo</h2><div class="hq">Tel Aviv, Israel</div></div>
+        <span class="status-badge status-shipping">Shipping</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">Edge AI</span><span class="tag">Automotive</span><span class="tag">Inference</span><span class="tag">On-Device</span>
+      </div>
+      <div class="card-body">
+        <p>Specialized deep learning processors for edge devices. Hailo-8 with fully integrated on-chip memory. Hailo-10H adds gen AI on-device (LLMs, VLMs). Automotive-qualified AEC-Q100.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">$564M</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">26 TOPS</div><div class="key">Hailo-8</div></div>
+          <div class="metric"><div class="val">2017</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">Hailo-10H</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">40 TOPS (INT4) at 2.5W &bull; <1s first-token latency &bull; On-device LLMs/VLMs &bull; 100K+ SDK users</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">2026 automotive production</span>
+        <a href="https://hailo.ai" target="_blank">hailo.ai</a>
+      </div>
+    </div>
+
+    <!-- Blaize -->
+    <div class="card" data-tags="edge inference automotive" data-name="blaize">
+      <div class="card-header">
+        <div><h2>Blaize</h2><div class="hq">El Dorado Hills, CA, USA</div></div>
+        <span class="status-badge status-ipo">Public (NASDAQ)</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">Edge AI</span><span class="tag">Graph Streaming</span><span class="tag">Inference</span><span class="tag">Automotive</span>
+      </div>
+      <div class="card-body">
+        <p>First AI chip startup to go public (Jan 2025 via SPAC). Graph Streaming Processor for edge AI. Targets cameras, drones, industrial robots. Founded by former Intel engineers.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">NASDAQ</div><div class="key">Listed</div></div>
+          <div class="metric"><div class="val">$335M</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2010</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">GSP</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">$400M deal pipeline &bull; First AI chip startup IPO in 2025 &bull; Samsung &amp; Mercedes-Benz backed</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">$3.8M rev / -$87.5M loss (2023)</span>
+        <a href="https://blaize.com" target="_blank">blaize.com</a>
+      </div>
+    </div>
+
+    <!-- Rain AI -->
+    <div class="card" data-tags="datacenter inference neuromorphic" data-name="rain-ai">
+      <div class="card-header">
+        <div><h2>Rain AI</h2><div class="hq">San Francisco, CA, USA</div></div>
+        <span class="status-badge status-struggling">Struggling</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">Neuromorphic</span><span class="tag">Analog</span><span class="tag">Inference</span>
+      </div>
+      <div class="card-body">
+        <p>Brain-inspired neuromorphic analog chips. OpenAI signed $51M LOI in 2019. Sam Altman personally invested. $150M Series B collapsed; now seeking buyer or acqui-hire.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">~$600M</div><div class="key">Peak Valuation</div></div>
+          <div class="metric"><div class="val">$151M</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2017</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">NPU</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">Claims 1000x energy efficiency &bull; Analog compute &bull; OpenAI-backed but Series B collapsed</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Seeking buyer / acqui-hire</span>
+        <a href="https://rain.ai" target="_blank">rain.ai</a>
+      </div>
+    </div>
+
+    <!-- Esperanto Technologies -->
+    <div class="card" data-tags="datacenter inference riscv edge" data-name="esperanto">
+      <div class="card-header">
+        <div><h2>Esperanto Technologies</h2><div class="hq">Austin, TX, USA</div></div>
+        <span class="status-badge status-acquired">IP Acquired</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">RISC-V</span><span class="tag">Inference</span><span class="tag">Energy Efficient</span>
+      </div>
+      <div class="card-body">
+        <p>RISC-V based energy-efficient AI processors. Had partnerships with NEC and Rapidus. Ainekko acquired its IP in Nov 2025 for an open-source edge AI platform.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">IP Sold</div><div class="key">Status</div></div>
+          <div class="metric"><div class="val">$124M</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2014</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">ET-SoC-1</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">1000+ RISC-V cores &bull; IP now owned by Ainekko &bull; Partnered with NEC &amp; Rapidus</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">IP acquired by Ainekko (2025)</span>
+        <a href="https://esperanto.ai" target="_blank">esperanto.ai</a>
+      </div>
+    </div>
+
+    <!-- Mythic AI -->
+    <div class="card" data-tags="edge inference analog in-memory datacenter" data-name="mythic">
+      <div class="card-header">
+        <div><h2>Mythic AI</h2><div class="hq">Austin, TX, USA</div></div>
+        <span class="status-badge status-shipping">Comeback</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">Analog</span><span class="tag">In-Memory</span><span class="tag">Edge</span><span class="tag">Inference</span>
+      </div>
+      <div class="card-body">
+        <p>Pioneered analog compute-in-memory using flash cells for matrix math. Nearly died in 2022, then raised $125M (Dec 2025). Claims 100x energy advantage over GPUs. Honda partnership in 2026.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">Revived</div><div class="key">Status</div></div>
+          <div class="metric"><div class="val">$302M</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2012</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">APU</div><div class="key">Key Chip</div></div>
+        </div>
+        <div class="perf-claim">100x energy advantage vs GPUs &bull; 80x cost advantage per M tokens &bull; Honda partnership (Feb 2026)</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Dramatic comeback from near-death</span>
+        <a href="https://mythic.ai" target="_blank">mythic.ai</a>
+      </div>
+    </div>
+
+    <!-- Luminous Computing -->
+    <div class="card" data-tags="datacenter photonic training inference" data-name="luminous">
+      <div class="card-header">
+        <div><h2>Luminous Computing</h2><div class="hq">Palo Alto, CA, USA</div></div>
+        <span class="status-badge status-development">Stealth</span>
+      </div>
+      <div class="card-tags">
+        <span class="tag">Photonic</span><span class="tag">Training + Inference</span><span class="tag">Data Center</span>
+      </div>
+      <div class="card-body">
+        <p>Using photonic interconnects to build supercomputer-class systems. Aims to solve memory bandwidth bottleneck with optics. Low profile since founding; operates mostly in stealth.</p>
+        <div class="metrics">
+          <div class="metric"><div class="val">Stealth</div><div class="key">Status</div></div>
+          <div class="metric"><div class="val">$115M+</div><div class="key">Total Raised</div></div>
+          <div class="metric"><div class="val">2019</div><div class="key">Founded</div></div>
+          <div class="metric"><div class="val">Photonic</div><div class="key">Approach</div></div>
+        </div>
+        <div class="perf-claim">Photonic interconnects &bull; Targets memory bandwidth bottleneck &bull; Stealth mode</div>
+      </div>
+      <div class="card-footer">
+        <span class="founded">Backed by Bill Gates &amp; others</span>
+        <a href="https://luminous.com" target="_blank">luminous.com</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Comparison Table -->
+<section class="table-section">
+  <h2>Side-by-Side Comparison</h2>
+  <div class="table-wrap">
+    <table id="compTable">
+      <thead>
+        <tr>
+          <th data-col="0">Company</th>
+          <th data-col="1">Founded</th>
+          <th data-col="2">HQ</th>
+          <th data-col="3">Key Chip</th>
+          <th data-col="4">Approach</th>
+          <th data-col="5">Target</th>
+          <th data-col="6">Valuation</th>
+          <th data-col="7">Total Raised</th>
+          <th data-col="8">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="company-cell">Cerebras</td><td>2016</td><td>Sunnyvale, CA</td><td>WSE-3</td><td>Wafer-scale</td><td>Training + Inference</td><td>$23B</td><td>$4.7B+</td><td>Pre-IPO</td></tr>
+        <tr><td class="company-cell">Groq</td><td>2016</td><td>Mountain View, CA</td><td>LPU v1</td><td>Language Processing Unit</td><td>Inference</td><td>$20B (Nvidia)</td><td>$3.2B+</td><td>Nvidia Deal</td></tr>
+        <tr><td class="company-cell">Taalas</td><td>2023</td><td>Toronto, CA</td><td>HC1</td><td>Hardwired models</td><td>Inference</td><td>N/A</td><td>$219M</td><td>Shipping</td></tr>
+        <tr><td class="company-cell">Etched</td><td>2022</td><td>San Francisco, CA</td><td>Sohu</td><td>Transformer ASIC</td><td>Inference</td><td>$5B</td><td>~$1B</td><td>Development</td></tr>
+        <tr><td class="company-cell">MatX</td><td>2022</td><td>USA</td><td>MatX One</td><td>LLM-specific silicon</td><td>Training + Inference</td><td>Multi-$B</td><td>$600M+</td><td>Development</td></tr>
+        <tr><td class="company-cell">SambaNova</td><td>2017</td><td>Palo Alto, CA</td><td>SN50</td><td>Reconfigurable Dataflow</td><td>Training + Inference</td><td>~$1.6B</td><td>$1.5B+</td><td>Intel Talks</td></tr>
+        <tr><td class="company-cell">Tenstorrent</td><td>2016</td><td>Toronto, CA</td><td>Blackhole</td><td>RISC-V + Tensix</td><td>Training + Inference</td><td>$2.6B</td><td>$700M+</td><td>Shipping</td></tr>
+        <tr><td class="company-cell">d-Matrix</td><td>2019</td><td>Santa Clara, CA</td><td>Corsair</td><td>In-memory compute</td><td>Inference</td><td>$2B</td><td>$450M</td><td>Shipping</td></tr>
+        <tr><td class="company-cell">Lightmatter</td><td>2017</td><td>Boston, MA</td><td>Passage M1000</td><td>Photonic</td><td>Inference + Interconnect</td><td>$4.4B</td><td>$850M</td><td>Shipping</td></tr>
+        <tr><td class="company-cell">Graphcore</td><td>2016</td><td>Bristol, UK</td><td>IPU</td><td>Intelligence Processing</td><td>Training + Inference</td><td>Acquired</td><td>$730M+</td><td>SoftBank</td></tr>
+        <tr><td class="company-cell">FuriosaAI</td><td>2017</td><td>Seoul, KR</td><td>RNGD</td><td>NPU</td><td>Inference</td><td>Unicorn</td><td>$250M+</td><td>Shipping</td></tr>
+        <tr><td class="company-cell">Rebellions</td><td>2020</td><td>Seoul, KR</td><td>Rebel-Quad</td><td>AI Accelerator</td><td>Inference</td><td>$1.4B</td><td>$500M+</td><td>Shipping</td></tr>
+        <tr><td class="company-cell">Hailo</td><td>2017</td><td>Tel Aviv, IL</td><td>Hailo-10H</td><td>Edge AI processor</td><td>Edge Inference</td><td>N/A</td><td>$564M</td><td>Shipping</td></tr>
+        <tr><td class="company-cell">Blaize</td><td>2010</td><td>El Dorado Hills, CA</td><td>GSP</td><td>Graph Streaming</td><td>Edge Inference</td><td>NASDAQ</td><td>$335M</td><td>Public</td></tr>
+        <tr><td class="company-cell">Rain AI</td><td>2017</td><td>San Francisco, CA</td><td>NPU</td><td>Neuromorphic analog</td><td>Inference</td><td>~$600M</td><td>$151M</td><td>Seeking Buyer</td></tr>
+        <tr><td class="company-cell">Esperanto</td><td>2014</td><td>Austin, TX</td><td>ET-SoC-1</td><td>RISC-V</td><td>Inference</td><td>IP Sold</td><td>$124M</td><td>IP Acquired</td></tr>
+        <tr><td class="company-cell">Mythic AI</td><td>2012</td><td>Austin, TX</td><td>APU</td><td>Analog in-memory</td><td>Edge + DC Inference</td><td>N/A</td><td>$302M</td><td>Comeback</td></tr>
+        <tr><td class="company-cell">Luminous</td><td>2019</td><td>Palo Alto, CA</td><td>Photonic</td><td>Photonic interconnect</td><td>Training + Inference</td><td>Stealth</td><td>$115M+</td><td>Stealth</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  <p>Data compiled from public sources including TechCrunch, Bloomberg, SiliconANGLE, and company press releases. March 2026.</p>
+  <p style="margin-top:0.4rem;">Built with vanilla HTML/CSS/JS &mdash; no frameworks, no dependencies.</p>
+</footer>
+
 <script>
-const board = document.getElementById('board');
-const status = document.getElementById('status');
-const restartBtn = document.getElementById('restart');
-const sx = document.getElementById('sx');
-const so = document.getElementById('so');
-const sd = document.getElementById('sd');
+// Filter buttons
+const filterBtns = document.querySelectorAll('.filter-btn');
+const cards = document.querySelectorAll('.card');
+const searchInput = document.getElementById('search');
 
-const WINS = [
-  [0,1,2],[3,4,5],[6,7,8],
-  [0,3,6],[1,4,7],[2,5,8],
-  [0,4,8],[2,4,6]
-];
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    cards.forEach(card => {
+      if (f === 'all' || card.dataset.tags.includes(f)) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  });
+});
 
-let cells, state, turn, over, scores = {X:0, O:0, D:0};
+// Search
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  // Reset filter buttons
+  filterBtns.forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-filter="all"]').classList.add('active');
 
-function init() {
-  board.innerHTML = '';
-  state = Array(9).fill('');
-  turn = 'X';
-  over = false;
-  status.textContent = 'Your turn (X)';
-  cells = [];
-  for (let i = 0; i < 9; i++) {
-    const div = document.createElement('div');
-    div.className = 'cell';
-    div.addEventListener('click', () => play(i));
-    board.appendChild(div);
-    cells.push(div);
-  }
-}
-
-function play(i) {
-  if (over || state[i] || turn !== 'X') return;
-  place(i, 'X');
-  if (!over && state.includes('')) {
-    turn = 'O';
-    status.textContent = 'AI thinking...';
-    setTimeout(aiMove, 300);
-  }
-}
-
-function place(i, mark) {
-  state[i] = mark;
-  cells[i].textContent = mark;
-  cells[i].classList.add('taken', mark.toLowerCase());
-  const win = checkWin(mark);
-  if (win) {
-    over = true;
-    win.forEach(j => cells[j].classList.add('win'));
-    status.textContent = mark === 'X' ? 'You win!' : 'AI wins!';
-    scores[mark]++;
-    updateScore();
-  } else if (!state.includes('')) {
-    over = true;
-    status.textContent = "It's a draw!";
-    scores.D++;
-    updateScore();
-  }
-}
-
-function checkWin(mark) {
-  for (const w of WINS) {
-    if (w.every(i => state[i] === mark)) return w;
-  }
-  return null;
-}
-
-function aiMove() {
-  const i = bestMove();
-  place(i, 'O');
-  if (!over) {
-    turn = 'X';
-    status.textContent = 'Your turn (X)';
-  }
-}
-
-function bestMove() {
-  let best = -Infinity, move = -1;
-  for (let i = 0; i < 9; i++) {
-    if (state[i]) continue;
-    state[i] = 'O';
-    const s = minimax(false, -Infinity, Infinity);
-    state[i] = '';
-    if (s > best) { best = s; move = i; }
-  }
-  return move;
-}
-
-function minimax(isMax, alpha, beta) {
-  if (checkWin('O')) return 1;
-  if (checkWin('X')) return -1;
-  if (!state.includes('')) return 0;
-  if (isMax) {
-    let best = -Infinity;
-    for (let i = 0; i < 9; i++) {
-      if (state[i]) continue;
-      state[i] = 'O';
-      best = Math.max(best, minimax(false, alpha, beta));
-      state[i] = '';
-      alpha = Math.max(alpha, best);
-      if (beta <= alpha) break;
+  cards.forEach(card => {
+    const text = card.textContent.toLowerCase();
+    const tags = card.dataset.tags;
+    if (!q || text.includes(q) || tags.includes(q)) {
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
     }
-    return best;
-  } else {
-    let best = Infinity;
-    for (let i = 0; i < 9; i++) {
-      if (state[i]) continue;
-      state[i] = 'X';
-      best = Math.min(best, minimax(true, alpha, beta));
-      state[i] = '';
-      beta = Math.min(beta, best);
-      if (beta <= alpha) break;
-    }
-    return best;
-  }
-}
+  });
+});
 
-function updateScore() {
-  sx.textContent = scores.X;
-  so.textContent = scores.O;
-  sd.textContent = scores.D;
-}
+// Table sort
+const table = document.getElementById('compTable');
+const headers = table.querySelectorAll('th');
+let sortCol = -1, sortAsc = true;
 
-restartBtn.addEventListener('click', init);
-init();
+headers.forEach(th => {
+  th.addEventListener('click', () => {
+    const col = parseInt(th.dataset.col);
+    if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = true; }
+    headers.forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+    th.classList.add(sortAsc ? 'sorted-asc' : 'sorted-desc');
+
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    rows.sort((a, b) => {
+      let aVal = a.children[col].textContent.trim();
+      let bVal = b.children[col].textContent.trim();
+      // Try numeric sort for years and funding
+      const aNum = parseFloat(aVal.replace(/[$,B+M~]/g, ''));
+      const bNum = parseFloat(bVal.replace(/[$,B+M~]/g, ''));
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        // Normalize B vs M
+        let aN = aVal.includes('B') ? aNum * 1000 : aNum;
+        let bN = bVal.includes('B') ? bNum * 1000 : bNum;
+        return sortAsc ? aN - bN : bN - aN;
+      }
+      return sortAsc ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+    });
+    rows.forEach(r => tbody.appendChild(r));
+  });
+});
 </script>
 </body>
 </html>
